@@ -14,6 +14,23 @@ variable "app_service_plan_name" {
   type        = string
 }
 
+variable "client_id" {
+  description = "The client ID for the Azure Active Directory application."
+  type        = string
+}
+variable "client_secret" {
+  description = "The client secret for the Azure Active Directory application."
+  type        = string
+}
+variable "tenant_id" {
+  description = "The tenant ID for the Azure Active Directory application."
+  type        = string
+}
+variable "subscription_id" {
+  description = "The subscription ID for the Azure account."
+  type        = string
+}
+
 variable "container_instance_name" {
   description = "The name of the Azure Container Instance for the chat application."
   type        = string

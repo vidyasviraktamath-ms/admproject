@@ -2,10 +2,11 @@
 
 provider "azurerm" {
   features {}
-  client_id       = Sys.getenv("ARM_CLIENT_ID")
-  client_secret   = Sys.getenv("ARM_CLIENT_SECRET")
-  tenant_id       = Sys.getenv("ARM_TENANT_ID")
-  subscription_id = Sys.getenv("ARM_SUBSCRIPTION_ID")
+
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
 }
 
 terraform {
