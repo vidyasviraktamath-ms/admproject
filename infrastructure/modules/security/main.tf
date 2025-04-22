@@ -1,5 +1,5 @@
 resource "azurerm_application_gateway" "chat_app_waf" {
-  name                = "${var.prefix}-waf"
+  name                = "chat-waf"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku {
@@ -21,10 +21,9 @@ resource "azurerm_application_gateway" "chat_app_waf" {
   }
   backend_address_pool {
     name = "appGatewayBackendPool"
-    backend_addresses {
-      fqdn = "${var.backend_service_name}.${var.backend_service_domain}"
-    }
+    # Removed unsupported backend_address block
   }
+  
   backend_http_settings {
     name                  = "appGatewayBackendHttpSettings"
     cookie_based_affinity = "Disabled"
@@ -45,19 +44,26 @@ resource "azurerm_application_gateway" "chat_app_waf" {
     backend_address_pool_name = "appGatewayBackendPool"
     backend_http_settings_name = "appGatewayBackendHttpSettings"
   }
-  web_application_firewall_configuration {
-    enabled = true
-    firewall_mode = "Prevention"
-    rule_set_type = "OWASP"
-    rule_set_version = "3.2"
-  }
 }
 
 resource "azurerm_public_ip" "chat_app_public_ip" {
-  name                = "${var.prefix}-public-ip"
+  name                = "adm-public-ip"
   location            = var.location
   resource_group_name = var.resource_group_name
   allocation_method   = "Static"
+}
+
+resource "azurerm_web_application_firewall_policy" "chat_app_waf_policy" {
+  name                = "chat-app-waf-policy"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  #custom_rules        = []
+  managed_rules {
+    managed_rule_set {
+      type    = "OWASP"
+      version = "3.2"
+    }
+  }
 }
 
 output "waf_id" {

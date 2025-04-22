@@ -2,6 +2,14 @@ provider "azurerm" {
   features {}
 }
 
+terraform {
+  backend "azurerm" {
+    storage_account_name = "stgactadm123"
+    container_name       = "backendstg"
+    key                  = "terraform.tfstate"
+  }
+}
+
 resource "azurerm_resource_group" "chat_app_rg" {
   name     = "chat-app-rg"
   location = "East US"

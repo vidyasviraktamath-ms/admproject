@@ -3,6 +3,21 @@ variable "waf_name" {
   type        = string
 }
 
+variable "location" {
+  description = "The location where the WAF will be deployed"
+  type        = string
+}
+
+variable "resource_group_name" {
+  description = "The name of the resource group where the WAF will be deployed"
+  type        = string
+}
+
+variable "sku_tier" {
+  description = "The SKU tier of the Web Application Firewall"
+  type        = string
+  default     = "Standard_v2"
+}
 variable "waf_resource_group" {
   description = "The resource group where the WAF will be deployed"
   type        = string
