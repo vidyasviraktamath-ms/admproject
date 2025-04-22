@@ -16,12 +16,12 @@ resource "azurerm_resource_group" "chat_app_rg" {
 }
 
 module "network" {
-  source              = "../modules/network"
+  source              = "/modules/network"
   resource_group_name = azurerm_resource_group.chat_app_rg.name
 }
 
 module "compute" {
-  source              = "../modules/compute"
+  source              = "modules/compute"
   resource_group_name = azurerm_resource_group.chat_app_rg.name
 }
 
