@@ -26,7 +26,7 @@ permissions:
 jobs:
   terraform:
     name: Terraform Deploy
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout the repository
