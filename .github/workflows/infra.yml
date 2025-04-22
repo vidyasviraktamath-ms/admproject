@@ -44,54 +44,34 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+      # Step 4: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./infrastructure/ # Adjust if your Terraform files are in a different directory
+        env:
+          ARM_CLIENT_ID: ${{ env.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ env.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ env.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
+
+      # Step 5: Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: ./infrastructure/ # Adjust if necessary
         env:
           ARM_CLIENT_ID: ${{ env.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ env.AZURE_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
 
-      # Step 4: Debug Environment Variables
-      - name: Debug Environment Variables
-        run: |
-          echo "ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}"
-          echo "ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}"
-          echo "ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}"
-          echo "ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}"
-        working-directory: ./infrastructure/
-
-      # Step 5: Initialize Terraform (Provider Test)
-      - name: Terraform Init (Provider Test)
-        
-        run: terraform init
-        working-directory: ./infrastructure/
+      # Step 6: Terraform Apply (only on main branch)
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./infrastructure/ # Adjust if necessary
         env:
           ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
-
-      # Step 6: Initialize Terraform (Full Config) - Commented Out for Now
-      # - name: Terraform Init
-      #   run: terraform init
-      #   working-directory: ./infrastructure/
-      #   env:
-      #     ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
-      #     ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
-      #     ARM_TENANT_ID: ${{ env.ARM_TENANT_ID }}
-      #     ARM_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
-
-      # Step 7: Validate Terraform - Commented Out for Now
-      # - name: Terraform Validate
-      #   run: terraform validate
-      #   working-directory: ./infrastructure/
-
-      # Step 8: Plan Terraform - Commented Out for Now
-      # - name: Terraform Plan
-      #   run: terraform plan -out=tfplan
-      #   working-directory: ./infrastructure/
-
-      # Step 9: Apply Terraform - Commented Out for Now
-      # - name: Terraform Apply
-      #   if: github.ref == 'refs/heads/main'
-      #   run: terraform apply -auto-approve tfplan
-      #   working-directory: ./infrastructure/
