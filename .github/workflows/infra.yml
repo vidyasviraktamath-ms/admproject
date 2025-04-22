@@ -61,7 +61,9 @@ jobs:
 
       # Step 5: Initialize Terraform (Provider Test)
       - name: Terraform Init (Provider Test)
-        run: terraform init -backend=false -input=false -chdir="./infrastructure/" -upgrade
+        
+        run: terraform init
+        working-directory: ./infrastructure/
         env:
           ARM_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ env.ARM_CLIENT_SECRET }}
