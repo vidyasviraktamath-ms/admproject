@@ -1,6 +1,4 @@
-output "waf_id" {
-  value = azurerm_web_application_firewall.example.id
-}
+
 
 output "waf_name" {
   value = azurerm_web_application_firewall.example.name

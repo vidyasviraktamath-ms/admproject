@@ -36,9 +36,7 @@ resource "azurerm_virtual_network_peering" "hub_to_spoke" {
   use_remote_gateways            = false
 }
 
-output "vnet_id" {
-  value = azurerm_virtual_network.vnet.id
-}
+
 
 output "hub_subnet_id" {
   value = azurerm_subnet.hub_subnet.id
