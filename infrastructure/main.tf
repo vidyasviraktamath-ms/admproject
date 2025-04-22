@@ -1,0 +1,23 @@
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "chat_app_rg" {
+  name     = "chat-app-rg"
+  location = "East US"
+}
+
+module "network" {
+  source              = "../modules/network"
+  resource_group_name = azurerm_resource_group.chat_app_rg.name
+}
+
+module "compute" {
+  source              = "../modules/compute"
+  resource_group_name = azurerm_resource_group.chat_app_rg.name
+}
+
+module "security" {
+  source              = "../modules/security"
+  resource_group_name = azurerm_resource_group.chat_app_rg.name
+}
