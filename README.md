@@ -97,7 +97,7 @@ your-chat-app/
 
 The application is designed with a Hub & Spoke network architecture on Azure, ensuring that all resources are deployed within a private network. The backend communicates with an Azure Machine Learning instance to generate responses using the LLM. Security measures, including a Web Application Firewall (WAF), are implemented to protect the application at layer 7.
 
-[image](<Architecture diagram.vsdx>)
+![Alt text](<Architecture diagram.vsdx>)
 
 ## Usage Guidelines
 
