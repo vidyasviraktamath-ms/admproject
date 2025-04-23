@@ -1,5 +1,5 @@
 # The design for this overall solution. 
-
+![diagram](image.png)
 
 
 Below is the proposed strategy for the 5 environments:
