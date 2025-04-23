@@ -1,6 +1,6 @@
 # The design for this overall solution. 
 
-# I want to use GitHub Opensource, Terraform for my Infrastructure & App code deployment.Provide the construct on how the repository structure will be maintained (frontend, backend etc.), branching strategy for the repositories & Provide the Terraform files for the underlying infrastructure deployment.I plan on having 5 environments, some are standalone while some are to be Just-in-time provisioned.
+
 
 Below is the proposed strategy for the 5 environments:
 
