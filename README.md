@@ -5,40 +5,59 @@ This project is a chat application that utilizes a Large Language Model (LLM) fo
 ## Project Structure
 
 ```
-chat-app-azure-deployment
-├── backend
-│   ├── app.py                # Main entry point for the backend application
-│   ├── requirements.txt      # Python dependencies for the backend
-│   └── models
-│       └── model_handler.py   # Handles interactions with the Azure Machine Learning model
-├── frontend
-│   ├── public
-│   │   └── index.html        # Main HTML file for the React application
-│   ├── src
-│   │   ├── App.js            # Main component of the React application
-│   │   ├── components
-│   │   │   └── ChatBox.js    # Component for handling chat messages
-│   │   └── index.js          # Entry point for the React application
-│   └── package.json          # Configuration file for npm
-├── infrastructure
-│   ├── main.tf               # Main Terraform configuration file
-│   ├── variables.tf          # Variables for Terraform configuration
-│   ├── outputs.tf            # Outputs for Terraform configuration
-│   └── modules
-│       ├── network
-│       │   ├── main.tf       # Network infrastructure configuration
-│       │   ├── variables.tf   # Variables for network module
-│       │   └── outputs.tf     # Outputs for network module
-│       ├── compute
-│       │   ├── main.tf       # Compute resources configuration
-│       │   ├── variables.tf   # Variables for compute module
-│       │   └── outputs.tf     # Outputs for compute module
-│       └── security
-│           ├── main.tf       # Security measures configuration
-│           ├── variables.tf   # Variables for security module
-│           └── outputs.tf     # Outputs for security module
-├── .gitignore                # Files and directories to ignore by Git
-└── README.md                 # Project documentation
+your-chat-app/
+├── .github/workflows/        # GitHub Actions workflows for CI/CD
+├── infrastructure/          # Terraform files for Azure infrastructure
+│   ├── modules/             # Reusable Terraform modules
+│   │   ├── network/
+│   │   ├── compute/
+│   │   ├── aml/
+│   │   ├── aci/
+│   │   ├── waf/
+│   │   └── ...
+│   ├── environments/        # Environment-specific configurations
+│   │   ├── dev/
+│   │   │   ├── terraform.tfvars
+│   │   │   └── backend.tf
+│   │   ├── staging/
+│   │   │   ├── terraform.tfvars
+│   │   │   └── backend.tf
+│   │   └── prod/
+│   │       ├── terraform.tfvars
+│   │       └── backend.tf
+│   ├── main.tf              # Root module to orchestrate all resources
+│   ├── variables.tf         # Global variables
+│   ├── outputs.tf           # Outputs of the infrastructure
+│   └── backend.tf           # Default backend configuration
+├── backend/                 # Python backend application
+│   ├── app/                 # Main application code
+│   │   ├── __init__.py
+│   │   ├── main.py          # FastAPI or Flask entry point
+│   │   ├── llm_integration/ # Code to interact with the LLM via AML
+│   │   ├── security/        # Backend security-related code (auth, etc.)
+│   │   └── ...
+│   ├── tests/               # Backend unit and integration tests
+│   ├── requirements.txt
+│   ├── Dockerfile           # Dockerfile for the backend container
+│   └── ...
+├── frontend/                # React.js frontend application
+│   ├── src/                 # Main frontend code
+│   │   ├── App.js
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── services/        # API interaction logic
+│   │   └── ...
+│   ├── public/
+│   ├── tests/               # Frontend unit and integration tests (e.g., Jest, React Testing Library)
+│   ├── package.json
+│   ├── yarn.lock            # Or package-lock.json
+│   ├── Dockerfile           # Dockerfile for the frontend container (e.g., using Nginx)
+│   └── ...
+├── data/                    # Sample data, scripts for data preparation (not for production data)
+├── models/                  # Trained LLM artifacts (managed by AML, but might have related scripts)
+├── docs/                    # Project documentation
+├── .gitignore
+├── README.md
 ```
 
 ## Setup Instructions
@@ -77,6 +96,8 @@ chat-app-azure-deployment
 ## Architecture Overview
 
 The application is designed with a Hub & Spoke network architecture on Azure, ensuring that all resources are deployed within a private network. The backend communicates with an Azure Machine Learning instance to generate responses using the LLM. Security measures, including a Web Application Firewall (WAF), are implemented to protect the application at layer 7.
+
+[text](<Architecture diagram.vsdx>)
 
 ## Usage Guidelines
 

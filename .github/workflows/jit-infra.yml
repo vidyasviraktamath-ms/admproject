@@ -1,0 +1,87 @@
+name: Deploy Feature Branch Environment
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, reopened, synchronize]
+
+jobs:
+  provision:
+    if: github.event_name != 'pull_request_closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Unique Environment Name
+        id: env_name
+        run: echo "ENVIRONMENT_NAME=feat-${{ github.head_ref }}" >> $GITHUB_ENV
+
+      - name: Configure Terraform Backend
+        run: |
+          # Example: Configure backend with a unique key based on the branch
+          cat > infrastructure/jit_backend.tf <<EOF
+          terraform {
+            backend "azurerm" {
+              resource_group_name  = "rg-terraform-state" # Your state RG
+              storage_account_name = "staterrablob"       # Your state SA
+              container_name       = "tfstate-jit"
+              key                  = "${{ env.ENVIRONMENT_NAME }}.tfstate"
+            }
+          }
+          EOF
+
+      - name: Terraform Init
+        run: terraform init -backend-config="infrastructure/jit_backend.tf" -chdir="./infrastructure/jit"
+
+      - name: Terraform Plan
+        run: terraform plan -chdir="./infrastructure/jit" -var="environment=${{ env.ENVIRONMENT_NAME }}" -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -chdir="./infrastructure/jit" -var="environment=${{ env.ENVIRONMENT_NAME }}" -auto-approve tfplan
+
+  teardown:
+    if: github.event_name == 'pull_request_closed'
+    needs: provision
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Unique Environment Name
+        id: env_name
+        run: echo "ENVIRONMENT_NAME=feat-${{ github.head_ref }}" >> $GITHUB_ENV
+
+      - name: Configure Terraform Backend
+        run: |
+          cat > infrastructure/jit_backend.tf <<EOF
+          terraform {
+            backend "azurerm" {
+              resource_group_name  = "rg-terraform-state" # Your state RG
+              storage_account_name = "staterrablob"       # Your state SA
+              container_name       = "tfstate-jit"
+              key                  = "${{ env.ENVIRONMENT_NAME }}.tfstate"
+            }
+          }
+          EOF
+
+      - name: Terraform Init
+        run: terraform init -backend-config="infrastructure/jit_backend.tf" -chdir="./infrastructure/jit"
+
+      - name: Terraform Destroy
+        run: terraform destroy -chdir="./infrastructure/jit" -var="environment=${{ env.ENVIRONMENT_NAME }}" -auto-approve

@@ -1,0 +1,119 @@
+name: Deploy and Test Performance Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_name:
+        description: 'Unique name for the performance test environment (e.g., perf-run1)'
+        required: true
+        type: string
+      scale_factor:
+        description: 'Scaling factor for resources (e.g., 2 for double capacity)'
+        required: false
+        type: number
+        default: 1
+      test_duration:
+        description: 'Duration of the performance test in minutes'
+        required: false
+        type: number
+        default: 60
+
+jobs:
+  provision:
+    name: Provision Performance Test Environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      
+      - name: Configure Terraform Backend
+        run: |
+          cat > infrastructure/perf_backend.tf <<EOF
+          terraform {
+            backend "azurerm" {
+              resource_group_name  = "rg-terraform-state" # Your state RG
+              storage_account_name = "staterrablob"       # Your state SA
+              container_name       = "tfstate-perf"
+              key                  = "${{ env.ENVIRONMENT_NAME }}.tfstate"
+            }
+          }
+          EOF
+
+      - name: Terraform Init
+        run: terraform init -backend-config="infrastructure/perf_backend.tf" -chdir="./infrastructure/perf"
+
+      - name: Terraform Plan
+        run: terraform plan -chdir="./infrastructure/perf" -var="environment=${{ env.ENVIRONMENT_NAME }}" -var="scale_factor=${{ env.SCALE_FACTOR }}" -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -chdir="./infrastructure/perf" -var="environment=${{ env.ENVIRONMENT_NAME }}" -var="scale_factor=${{ env.SCALE_FACTOR }}" -auto-approve tfplan
+        id: apply
+
+      - name: Output Application Gateway IP
+        if: steps.apply.outcome == 'success'
+        run: |
+          terraform output -raw app_gateway_public_ip -chdir="./infrastructure/perf"
+
+  run_tests:
+    name: Run Performance Tests
+    needs: provision
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Test Tools
+        run: |
+          # Install your performance testing tools here (e.g., locust, k6)
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip install locust
+
+      - name: Run Load Tests
+        run: |
+          cd performance-tests # Assuming you have a directory with your test scripts
+          locust -H http://${{ env.ENVIRONMENT_IP }} --headless --users 10 --spawn-rate 5 --run-time ${{ env.TEST_DURATION }}m
+        # You might need more sophisticated reporting and failure conditions
+
+  teardown:
+    name: Teardown Performance Test Environment
+    needs: run_tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      
+
+      - name: Configure Terraform Backend
+        run: |
+          cat > infrastructure/perf_backend.tf <<EOF
+          terraform {
+            backend "azurerm" {
+              resource_group_name  = "rg-terraform-state" # Your state RG
+              storage_account_name = "staterrablob"       # Your state SA
+              container_name       = "tfstate-perf"
+              key                  = "${{ env.ENVIRONMENT_NAME }}.tfstate"
+            }
+          }
+          EOF
+
+      - name: Terraform Init
+        run: terraform init -backend-config="infrastructure/perf_backend.tf" -chdir="./infrastructure/perf"
+
+      - name: Terraform Destroy
+        run: terraform destroy -chdir="./infrastructure/perf" -var="environment=${{ env.ENVIRONMENT_NAME }}" -var="scale_factor=${{ env.SCALE_FACTOR }}" -auto-approve

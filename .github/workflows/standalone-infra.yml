@@ -1,0 +1,48 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - test
+          - staging
+  push:
+    branches:
+      - main # Example: Deploy to staging on main branch push
+  pull_request:
+    branches:
+      - main # Example: Plan against staging on pull requests to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Terraform Environment Variables
+        run: |
+          echo "TF_VAR_environment=${{ github.event.inputs.environment || 'staging' }}" >> $GITHUB_ENV
+          # Add other environment-specific variables here if needed
+
+      - name: Terraform Init
+        run: terraform init -chdir="./infrastructure/${{ env.TF_VAR_environment }}"
+
+      - name: Terraform Plan
+        run: terraform plan -chdir="./infrastructure/${{ env.TF_VAR_environment }}" -out=tfplan
+
+      - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        run: terraform apply -chdir="./infrastructure/${{ env.TF_VAR_environment }}" -auto-approve tfplan

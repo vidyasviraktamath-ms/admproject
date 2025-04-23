@@ -1,4 +1,8 @@
-Here's a proposed strategy for your 5 environments:
+# The design for this overall solution. 
+
+# I want to use GitHub Opensource, Terraform for my Infrastructure & App code deployment.Provide the construct on how the repository structure will be maintained (frontend, backend etc.), branching strategy for the repositories & Provide the Terraform files for the underlying infrastructure deployment.I plan on having 5 environments, some are standalone while some are to be Just-in-time provisioned.
+
+Below is the proposed strategy for the 5 environments:
 
 Development (Dev): Standalone
 
@@ -33,20 +37,23 @@ Terraform configuration might be parameterized for scaling.
 
 Terraform Considerations for JIT Environments:
 
-Automation: You'll need robust automation (likely using your CI/CD pipeline) to trigger the Terraform deployment and destruction of these JIT environments.
-Configuration Management: How will you manage the specific configurations for these environments (e.g., branch-specific settings for Feat-X, scaling parameters for Perf)? You might use:
+Automation: We will need robust automation (likely using the CI/CD pipeline) to trigger the Terraform deployment and destruction of these JIT environments.
+Configuration Management: How will We manage the specific configurations for these environments (e.g., branch-specific settings for Feat-X, scaling parameters for Perf)? We might use:
 Terraform variables passed during the CI/CD pipeline.
 Separate terraform.tfvars files generated dynamically.
 Cloud-native configuration services.
-State Management: Each JIT environment will need its own Terraform state to avoid conflicts. You can achieve this by:
+State Management: Each JIT environment will need its own Terraform state to avoid conflicts. We can achieve this by:
 Using unique prefixes or keys for the state backend (e.g., based on the branch name or a unique identifier).
 Creating temporary state containers.
 
+# Explain how you'd manage the state files, and ensure the solution is cost effective.
 
 Leveraging Azure Storage Account as the backend due to its low cost, reliability, and features.
 Organizing state files logically using containers and descriptive blob names.
 Implementing cost optimization techniques like using Infrequent Access tier for long-lived environments and Lifecycle Management policies for older states.
 Ensuring timely cleanup of JIT environments and their associated state.
-Dynamically configuring the backend in your CI/CD pipelines to manage state for different environments correctly.
+Dynamically configuring the backend in the CI/CD pipelines to manage state for different environments correctly.
 
-I'd recommend a comprehensive observability strategy with metrics, logs, and traces, using Azure Monitor and Application Insights. Implement SRE practices like SLOs, automated incident response, and continuous performance optimization, paying special attention to LLM latency and error rates.
+# What kind of observability and SRE practices would you follow.
+
+Would recommend a comprehensive observability strategy with metrics, logs, and traces, using Azure Monitor and Application Insights. Implement SRE practices like SLOs, automated incident response, and continuous performance optimization, paying special attention to LLM latency and error rates.
